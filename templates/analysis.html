@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dataset Profile Analysis - {{ profile.filename }}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo-container">
+                <i class="fas fa-network-wired logo-icon"></i>
+                <span class="logo-text">Dataset Fusion AI</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/"><i class="fas fa-home"></i>Home / Upload</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/dashboard"><i class="fas fa-chart-pie"></i>Dashboard</a>
+                </li>
+                <li class="nav-item active">
+                    <a href="#"><i class="fas fa-chart-bar"></i>Profile Details</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="no-print" id="themeToggle"><i class="fas fa-moon"></i>Toggle Theme</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="content-header">
+                <div>
+                    <a href="/dashboard" class="btn btn-sm btn-outline-secondary mb-3"><i class="fas fa-chevron-left me-2"></i>Back to Dashboard</a>
+                    <h1>Dataset Profile Analysis</h1>
+                    <p class="text-secondary mb-0">Detailed statistical features and quality report for <strong>{{ profile.filename }}</strong></p>
+                </div>
+            </div>
+
+            <!-- Quality Rating Summary Card -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4">
+                    <div class="glass-card text-center">
+                        <div class="score-gauge-container">
+                            <span class="score-gauge-value">{{ profile.quality_score }}</span>
+                            <span class="score-gauge-label">Quality Score</span>
+                        </div>
+                        <p class="text-secondary small mt-3">Computed using configurable metrics (outliers, duplicates, completeness, consistency, validity).</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="glass-card">
+                        <h4 class="mb-3">Quality Breakdown</h4>
+                        <div class="row g-3">
+                            {% for metric, score in profile.quality_breakdown.items() %}
+                            <div class="col-sm-6 col-md-4">
+                                <div class="p-2 border border-secondary rounded">
+                                    <small class="text-muted d-block">{{ metric.replace('_', ' ').title() }}</small>
+                                    <strong class="h5 mt-1 d-block text-primary">{{ score }}/100</strong>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columns statistics table -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="glass-card">
+                        <h4 class="mb-3"><i class="fas fa-table-list text-primary me-2"></i>Feature Properties & Statistics</h4>
+                        <div class="table-responsive">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Column Name</th>
+                                        <th>Data Type</th>
+                                        <th>Unique Values</th>
+                                        <th>Missing Cells</th>
+                                        <th>Descriptive Statistics / Modes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for col, stats in profile.column_stats.items() %}
+                                    <tr>
+                                        <td><strong>{{ col }}</strong></td>
+                                        <td><span class="badge bg-secondary">{{ stats.type }}</span></td>
+                                        <td>{{ stats.unique_count }}</td>
+                                        <td>
+                                            {{ stats.null_count }} 
+                                            <span class="text-muted small">({{ stats.null_percent | round(2) }}%)</span>
+                                        </td>
+                                        <td class="small">
+                                            {% if stats.type == 'Numeric' %}
+                                                Mean: {{ stats.mean | round(3) }} | Std: {{ stats.std | round(3) }} | Min: {{ stats.min | round(3) }} | Max: {{ stats.max | round(3) }}
+                                                {% if stats.outlier_count > 0 %}
+                                                    <span class="text-danger d-block">Outliers: {{ stats.outlier_count }} ({{ stats.outlier_percent | round(2) }}%)</span>
+                                                {% endif %}
+                                            {% else %}
+                                                Mode: <em>{{ stats.mode }}</em> | Freq: {{ stats.mode_freq }} ({{ stats.mode_percent | round(2) }}%)
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heatmap and Correlation section -->
+            <div class="row g-4">
+                <!-- Null Heatmap -->
+                <div class="col-md-5">
+                    <div class="glass-card">
+                        <h4 class="mb-3"><i class="fas fa-barcode text-primary me-2"></i>Null Value Matrix Heatmap</h4>
+                        <p class="text-muted small">Visual distribution of missing values from top to bottom (40 rows aggregation bins).</p>
+                        
+                        <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                            <table class="table table-sm text-secondary small align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Bin</th>
+                                        {% for col in profile.column_names %}
+                                        <th class="text-center">{{ col[:4] }}..</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in profile.null_heatmap %}
+                                    <tr>
+                                        <td class="text-muted font-monospace small" style="font-size:0.75rem;">{{ row.bin.split(' ')[1] }}</td>
+                                        {% for col in profile.column_names %}
+                                        {% set val = row.null_percentages[col] %}
+                                        <!-- Color density from white (0% nulls) to red (100% nulls) -->
+                                        <td class="text-center" style="background-color: rgba(239, 68, 68, {{ val / 100 }}); color: {% if val > 50 %}#fff{% else %}inherit{% endif %}; font-size:0.7rem;">
+                                            {{ val | int }}%
+                                        </td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Correlation Table Matrix -->
+                <div class="col-md-7">
+                    <div class="glass-card">
+                        <h4 class="mb-3"><i class="fas fa-grip-lines text-primary me-2"></i>Feature Correlation Matrix</h4>
+                        <p class="text-muted small">Pairwise correlation coefficients for numeric columns (values range from -1 to +1).</p>
+                        
+                        {% if profile.correlation_matrix %}
+                        <div class="table-responsive">
+                            <table class="table table-sm text-secondary small text-center align-middle">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        {% for col in profile.correlation_matrix.keys() %}
+                                        <th><strong>{{ col[:6] }}..</strong></th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row_col, cols in profile.correlation_matrix.items() %}
+                                    <tr>
+                                        <td class="text-start"><strong>{{ row_col }}</strong></td>
+                                        {% for col_val in cols.values() %}
+                                        <!-- Gradient color calculation: positive green, negative red -->
+                                        {% if col_val > 0.01 %}
+                                            <td style="background-color: rgba(16, 185, 129, {{ col_val }}); color: {% if col_val > 0.6 %}#fff{% else %}inherit{% endif %};">
+                                                {{ col_val | round(2) }}
+                                            </td>
+                                        {% elif col_val < -0.01 %}
+                                            <td style="background-color: rgba(239, 68, 68, {{ col_val | abs }}); color: {% if col_val | abs > 0.6 %}#fff{% else %}inherit{% endif %};">
+                                                {{ col_val | round(2) }}
+                                            </td>
+                                        {% else %}
+                                            <td style="background-color: transparent;">0.00</td>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted italic py-4 text-center">No numeric feature relationships available (need at least 2 numeric columns).</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dataset Selection & Fusion Recommender</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom style overrides -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo-container">
+                <i class="fas fa-network-wired logo-icon"></i>
+                <span class="logo-text">Dataset Fusion AI</span>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <a href="/"><i class="fas fa-home"></i>🏠 Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/upload-page"><i class="fas fa-cloud-upload-alt"></i>📂 Upload Datasets</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/profiles"><i class="fas fa-chart-bar"></i>📊 Dataset Profiles</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/dashboard"><i class="fas fa-robot"></i>🤖 AI Recommendation</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/reports"><i class="fas fa-file-invoice"></i>📄 Reports</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/history"><i class="fas fa-history"></i>🕘 History</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" id="themeToggle"><i class="fas fa-moon"></i>🌙 Toggle Theme</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="content-header">
+                <div>
+                    <h1>Intelligent Dataset Advisor</h1>
+                    <p class="text-secondary mb-0">Help you select, score, and combine CSV datasets for optimal machine learning output.</p>
+                </div>
+            </div>
+
+            <!-- Guided Workflow Stepper -->
+            <div class="glass-card mb-5 py-4">
+                <h5 class="text-muted text-center mb-4 uppercase tracking-wider">Guided Optimization Flow</h5>
+                <div class="workflow-steps">
+                    <div class="workflow-step active">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Upload Dataset A</div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Upload Dataset B</div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Generate AI recommendation</div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Fuse & Download</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selection Cockpit -->
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="glass-card">
+                        <h3 class="mb-4"><i class="fas fa-sliders-h text-primary me-2"></i>Select Datasets for Comparison</h3>
+                        
+                        <form action="/recommend" method="GET" id="compareForm">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label for="datasetA" class="form-label font-weight-bold">Dataset A (Baseline)</label>
+                                    <select class="form-select bg-dark text-white border-secondary py-2" id="datasetA" name="file_a" required>
+                                        <option value="" disabled selected>-- Select Dataset A --</option>
+                                        {% for file in recent_files %}
+                                            <option value="{{ file }}">{{ file }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="datasetB" class="form-label font-weight-bold">Dataset B (Secondary)</label>
+                                    <select class="form-select bg-dark text-white border-secondary py-2" id="datasetB" name="file_b" required>
+                                        <option value="" disabled selected>-- Select Dataset B --</option>
+                                        {% for file in recent_files %}
+                                            <option value="{{ file }}">{{ file }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 py-3 pulse-btn" id="compareBtn" {% if not recent_files or recent_files|length < 2 %}disabled{% endif %}>
+                                <i class="fas fa-chart-line me-2"></i>Compare & Analyze Datasets
+                            </button>
+                            
+                            {% if not recent_files or recent_files|length < 2 %}
+                                <div class="alert alert-warning border-0 small mt-3" style="background-color: rgba(245, 158, 11, 0.1); color: var(--status-warning);">
+                                    <i class="fas fa-exclamation-circle me-2"></i>Please upload at least <strong>two datasets</strong> to execute comparison and compatibility scoring.
+                                </div>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="glass-card d-flex flex-column justify-content-between">
+                        <div>
+                            <h4 class="mb-3"><i class="fas fa-cloud-upload-alt text-secondary me-2"></i>Quick Add</h4>
+                            <p class="text-muted small">Need to add new CSV files to the list? Head to the Upload portal.</p>
+                            <a href="/upload-page" class="btn btn-outline-primary w-100 mt-2 py-2"><i class="fas fa-plus me-2"></i>Upload Portal</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap & FontAwesome JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script>
+        // Set dynamic stepping states based on selection
+        const datasetA = document.getElementById('datasetA');
+        const datasetB = document.getElementById('datasetB');
+        const steps = document.querySelectorAll('.workflow-step');
+        
+        function updateSteps() {
+            if (datasetA.value && datasetB.value) {
+                steps[0].classList.add('completed');
+                steps[1].classList.add('completed');
+                steps[2].classList.add('active');
+            } else if (datasetA.value) {
+                steps[0].classList.add('completed');
+                steps[1].classList.add('active');
+            }
+        }
+        
+        if(datasetA && datasetB) {
+            datasetA.addEventListener('change', updateSteps);
+            datasetB.addEventListener('change', updateSteps);
+        }
+    </script>
+</body>
+</html>

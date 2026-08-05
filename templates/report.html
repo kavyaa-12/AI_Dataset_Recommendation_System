@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dataset Analysis & Fusion Report</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #0f172a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .report-header {
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .report-section {
+            margin-bottom: 2rem;
+            page-break-inside: avoid;
+        }
+        
+        .report-section h3 {
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .table-custom {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        .table-custom th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 600;
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        
+        .table-custom td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+        }
+        
+        .recommendation-box {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        @media print {
+            .btn-print {
+                display: none !important;
+            }
+            body {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body class="p-5">
+    <!-- Print Button (visible on screen only) -->
+    <div class="d-flex justify-content-between align-items-center mb-4 btn-print">
+        <a href="/dashboard?file_a={{ profile_a.filename }}&file_b={{ profile_b.filename }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Dashboard</a>
+        <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print me-2"></i>Print Report / Save as PDF</button>
+    </div>
+
+    <!-- Header -->
+    <header class="report-header d-flex justify-content-between align-items-end">
+        <div>
+            <h1 class="h2 mb-1">Dataset Analysis & Recommendation Report</h1>
+            <p class="text-muted mb-0">AI-Based Dataset Selection and Fusion Recommendation System</p>
+        </div>
+        <div class="text-end text-muted small">
+            <div><strong>Report Date:</strong> 2026-07-30</div>
+            <div><strong>System Engine:</strong> RuleBasedRecommender V1</div>
+        </div>
+    </header>
+
+    <!-- Section 1: Overview -->
+    <section class="report-section">
+        <h3>1. Datasets Structural Profile</h3>
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Dataset A: {{ profile_a.filename }}</th>
+                    <th>Dataset B: {{ profile_b.filename }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Number of Rows</strong></td>
+                    <td>{{ profile_a.num_rows }}</td>
+                    <td>{{ profile_b.num_rows }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Number of Columns</strong></td>
+                    <td>{{ profile_a.num_cols }}</td>
+                    <td>{{ profile_b.num_cols }}</td>
+                </tr>
+                <tr>
+                    <td><strong>File Size</strong></td>
+                    <td>{{ profile_a.file_size_str }}</td>
+                    <td>{{ profile_b.file_size_str }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Memory Estimate</strong></td>
+                    <td>{{ profile_a.memory_usage_str }}</td>
+                    <td>{{ profile_b.memory_usage_str }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Duplicate Rows</strong></td>
+                    <td>{{ profile_a.duplicate_rows }}</td>
+                    <td>{{ profile_b.duplicate_rows }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Overall Quality Score</strong></td>
+                    <td><strong>{{ profile_a.quality_score }}/100</strong></td>
+                    <td><strong>{{ profile_b.quality_score }}/100</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section 2: Quality score Breakdown -->
+    <section class="report-section">
+        <h3>2. Weighted Quality Score Breakdown</h3>
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Quality Element</th>
+                    <th>Dataset A Score</th>
+                    <th>Dataset B Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for metric, score in profile_a.quality_breakdown.items() %}
+                <tr>
+                    <td><strong>{{ metric.replace('_', ' ').title() }}</strong></td>
+                    <td>{{ score }}/100</td>
+                    <td>{{ profile_b.quality_breakdown[metric] }}/100</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section 3: Compatibility analysis -->
+    <section class="report-section">
+        <h3>3. Pairwise Compatibility Metrics</h3>
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Compatibility Dimension</th>
+                    <th>Coefficient Score</th>
+                    <th>Detailed Breakdown</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Schema Similarity</strong></td>
+                    <td>{{ comp_details.schema_similarity }}%</td>
+                    <td>Jaccard index of overlapping headers.</td>
+                </tr>
+                <tr>
+                    <td><strong>Fuzzy Name Match</strong></td>
+                    <td>{{ comp_details.column_name_similarity }}%</td>
+                    <td>Fuzzy header matching distance ratios.</td>
+                </tr>
+                <tr>
+                    <td><strong>Type Compatibility</strong></td>
+                    <td>{{ comp_details.dtype_compatibility }}%</td>
+                    <td>Type matching in overlapping header slots.</td>
+                </tr>
+                <tr>
+                    <td><strong>Common Columns Ratio</strong></td>
+                    <td>{{ comp_details.common_columns_ratio }}%</td>
+                    <td>Common dimensions relative to maximum size.</td>
+                </tr>
+                <tr>
+                    <td><strong>Row Key Overlap</strong></td>
+                    <td>{{ comp_details.row_overlap }}%</td>
+                    <td>{{ comp_details.key_info }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Correlation Alignment</strong></td>
+                    <td>{{ comp_details.correlation_similarity }}%</td>
+                    <td>Statistical correlation similarity check on overlaps.</td>
+                </tr>
+                <tr>
+                    <td><strong>Missing Values Placements</strong></td>
+                    <td>{{ comp_details.missing_value_overlap }}%</td>
+                    <td>Correlation of missing row indices.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section 4: AI Selection & Fusion Recommendation -->
+    <section class="report-section">
+        <h3>4. AI Selection & Fusion Recommendation</h3>
+        <div class="recommendation-box">
+            <h4 class="h5 mb-3 text-primary">Recommendation: 
+                {% if rec_details.recommendation == 'FUSE' %}
+                    FUSE DATASETS
+                {% else %}
+                    USE SINGLE DATASET ({{ rec_details.recommendation }})
+                {% endif %}
+            </h4>
+            <div class="row mb-3">
+                <div class="col-6"><strong>Confidence Level:</strong> {{ rec_details.confidence_score }}%</div>
+                <div class="col-6"><strong>Estimated Fusion Gain Score:</strong> {{ rec_details.fusion_gain_score }} points</div>
+            </div>
+            <div class="mb-0">
+                <strong>Decision Reasoning:</strong>
+                <ul class="mt-2 mb-0">
+                    {% for reason in rec_details.reasoning %}
+                        <li>{{ reason }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: Fusion statistics if executed -->
+    {% if fusion_stats %}
+    <section class="report-section">
+        <h3>5. Executed Fusion Summary</h3>
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Metric Attribute</th>
+                    <th>Value</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Applied Strategy</strong></td>
+                    <td>{{ fusion_stats.strategy.upper() }}</td>
+                    <td>Merge logic chosen: Union, Concat, or Joins.</td>
+                </tr>
+                <tr>
+                    <td><strong>Key Column</strong></td>
+                    <td>{{ fusion_stats.primary_key or 'None' }}</td>
+                    <td>Identifier used to bind datasets together.</td>
+                </tr>
+                <tr>
+                    <td><strong>Final Row Count</strong></td>
+                    <td>{{ fusion_stats.rows_after }}</td>
+                    <td>Combined length (Initial: A: {{ fusion_stats.rows_before_a }} | B: {{ fusion_stats.rows_before_b }}).</td>
+                </tr>
+                <tr>
+                    <td><strong>Final Column Count</strong></td>
+                    <td>{{ fusion_stats.cols_after }}</td>
+                    <td>Combined features (Initial: A: {{ fusion_stats.cols_before_a }} | B: {{ fusion_stats.cols_before_b }}).</td>
+                </tr>
+                <tr>
+                    <td><strong>Duplicates Cleaned</strong></td>
+                    <td>{{ fusion_stats.duplicate_rows }}</td>
+                    <td>Exact duplicate rows filtered out during fusion.</td>
+                </tr>
+                <tr>
+                    <td><strong>Missing Values Ratio</strong></td>
+                    <td>{{ fusion_stats.missing_cells }} ({{ fusion_stats.missing_ratio }}%)</td>
+                    <td>Total blank slots in the combined dataset structure.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+    {% endif %}
+
+    <!-- Auto-trigger print prompt for saving as PDF -->
+    <script>
+        // Optional: auto trigger print when report page loaded directly
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>

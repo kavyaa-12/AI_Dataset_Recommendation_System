@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Workspace - Dataset Selection & Fusion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo-container">
+                <i class="fas fa-network-wired logo-icon"></i>
+                <span class="logo-text">Dataset Fusion AI</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/"><i class="fas fa-home"></i>🏠 Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/upload-page"><i class="fas fa-cloud-upload-alt"></i>📂 Upload Datasets</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/profiles"><i class="fas fa-chart-bar"></i>📊 Dataset Profiles</a>
+                </li>
+                <li class="nav-item active">
+                    <a href="/dashboard"><i class="fas fa-robot"></i>🤖 AI Recommendation</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/reports"><i class="fas fa-file-invoice"></i>📄 Reports</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/history"><i class="fas fa-history"></i>🕘 History</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" id="themeToggle"><i class="fas fa-moon"></i>🌙 Toggle Theme</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Content Area -->
+        <main class="main-content">
+            <div class="content-header">
+                <div>
+                    <h1>Analytical Cockpit</h1>
+                    <p class="text-secondary mb-0">Active comparison & fusion recommendation workspace.</p>
+                </div>
+            </div>
+
+            {% if not profile_a %}
+            <!-- Empty state -->
+            <div class="glass-card text-center py-5">
+                <i class="fas fa-copy fa-3x text-muted mb-3"></i>
+                <h3>No Active Comparison</h3>
+                <p class="text-secondary">Upload CSV datasets on the Home page to unlock analysis dashboards.</p>
+                <a href="/" class="btn btn-primary mt-3"><i class="fas fa-plus me-2"></i>Upload Now</a>
+            </div>
+            {% else %}
+
+            <!-- Side-by-Side Overview of A and B -->
+            <div class="row g-4 mb-4">
+                <!-- Dataset A Profile Card -->
+                <div class="col-md-6">
+                    <div class="glass-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-primary">Dataset A</span>
+                            <a href="/profiles?file={{ profile_a.filename }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-search me-1"></i>Full Profile</a>
+                        </div>
+                        <h4 class="text-truncate">{{ profile_a.filename }}</h4>
+                        <hr class="border-secondary">
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <h5 class="mb-0">{{ profile_a.num_rows }}</h5>
+                                <small class="text-muted">Rows</small>
+                            </div>
+                            <div class="col-4">
+                                <h5 class="mb-0">{{ profile_a.num_cols }}</h5>
+                                <small class="text-muted">Columns</small>
+                            </div>
+                            <div class="col-4">
+                                <h5 class="mb-0">{{ profile_a.file_size_str }}</h5>
+                                <small class="text-muted">Size</small>
+                            </div>
+                        </div>
+                        
+                        <div class="score-gauge-container">
+                            <span class="score-gauge-value">{{ profile_a.quality_score }}</span>
+                            <span class="score-gauge-label">Quality Score</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dataset B Profile Card -->
+                <div class="col-md-6">
+                    {% if profile_b %}
+                    <div class="glass-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-success">Dataset B</span>
+                            <a href="/profiles?file={{ profile_b.filename }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-search me-1"></i>Full Profile</a>
+                        </div>
+                        <h4 class="text-truncate">{{ profile_b.filename }}</h4>
+                        <hr class="border-secondary">
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <h5 class="mb-0">{{ profile_b.num_rows }}</h5>
+                                <small class="text-muted">Rows</small>
+                            </div>
+                            <div class="col-4">
+                                <h5 class="mb-0">{{ profile_b.num_cols }}</h5>
+                                <small class="text-muted">Columns</small>
+                            </div>
+                            <div class="col-4">
+                                <h5 class="mb-0">{{ profile_b.file_size_str }}</h5>
+                                <small class="text-muted">Size</small>
+                            </div>
+                        </div>
+                        
+                        <div class="score-gauge-container">
+                            <span class="score-gauge-value text-success">{{ profile_b.quality_score }}</span>
+                            <span class="score-gauge-label">Quality Score</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- If only 1 dataset is uploaded -->
+                    <div class="glass-card d-flex flex-column justify-content-center align-items-center py-5">
+                        <i class="fas fa-plus-circle fa-2x text-muted mb-3"></i>
+                        <h5>Compare with another dataset</h5>
+                        <p class="text-muted text-center px-4">Upload a secondary dataset to calculate schema matching, row overlaps, and execute fusion.</p>
+                        <a href="/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-upload me-2"></i>Upload File B</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if profile_b %}
+            <!-- AI Recommendation & Compatibility Section -->
+            <div class="row g-4 mb-4">
+                <!-- Compatibility Matrix summary card -->
+                <div class="col-lg-4">
+                    <div class="glass-card d-flex flex-column justify-content-between">
+                        <div>
+                            <h4 class="mb-3"><i class="fas fa-handshake-alt text-primary me-2"></i>Compatibility Score</h4>
+                            
+                            <div class="text-center my-4">
+                                <span class="display-3 font-weight-bold" style="color: var(--accent-blue);">{{ comp_score }}%</span>
+                                <p class="text-muted small mt-2">Pairwise Schema Alignment Index</p>
+                            </div>
+                            
+                            <ul class="list-group list-group-flush bg-transparent">
+                                <li class="list-group-item bg-transparent text-secondary border-secondary px-0 d-flex justify-content-between">
+                                    <span>Schema Similarity:</span>
+                                    <strong>{{ comp_details.schema_similarity }}%</strong>
+                                </li>
+                                <li class="list-group-item bg-transparent text-secondary border-secondary px-0 d-flex justify-content-between">
+                                    <span>Type Matches:</span>
+                                    <strong>{{ comp_details.dtype_compatibility }}%</strong>
+                                </li>
+                                <li class="list-group-item bg-transparent text-secondary border-secondary px-0 d-flex justify-content-between">
+                                    <span>Key Column:</span>
+                                    <strong>{{ comp_details.primary_key or 'None' }}</strong>
+                                </li>
+                            </ul>
+                        </div>
+                        <a href="#compatibility-details" class="btn btn-sm btn-outline-primary w-100 mt-3"><i class="fas fa-arrows-split-up-and-left me-2"></i>Explore Overlaps</a>
+                    </div>
+                </div>
+
+                <!-- Recommendation Output and Fusion Gain Card -->
+                <div class="col-lg-8">
+                    <div class="glass-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4><i class="fas fa-robot text-primary me-2"></i>AI Selection Advisory</h4>
+                            <span class="status-pill {% if rec_details.recommendation == 'FUSE' %}success{% else %}warning{% endif %}">
+                                {% if rec_details.recommendation == 'FUSE' %}Fusion Recommended{% else %}Use Single Dataset{% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="row mb-3 g-3">
+                            <div class="col-sm-6">
+                                <div class="p-3 rounded border border-secondary" style="background-color: var(--bg-secondary);">
+                                    <small class="text-muted d-block uppercase tracking-wider">RECOMMENDED ACTION</small>
+                                    <strong class="h4 mt-1 d-block text-primary">
+                                        {% if rec_details.recommendation == 'FUSE' %}
+                                            Fuse Dataset A & B
+                                        {% elif rec_details.recommendation == 'USE_A' %}
+                                            Use Dataset A (Only)
+                                        {% else %}
+                                            Use Dataset B (Only)
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 rounded border border-secondary" style="background-color: var(--bg-secondary);">
+                                    <small class="text-muted d-block">ESTIMATED FUSION GAIN SCORE</small>
+                                    <strong class="h4 mt-1 d-block {% if rec_details.fusion_gain_score > 0 %}text-success{% elif rec_details.fusion_gain_score < 0 %}text-danger{% else %}text-warning{% endif %}">
+                                        {{ rec_details.fusion_gain_score }} pts
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <strong>Decision Reasoning & Findings:</strong>
+                            <ul class="mt-2 pl-3">
+                                {% for reason in rec_details.reasoning %}
+                                    <li class="text-secondary small mb-1">{{ reason }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center small">
+                            <span class="text-muted">Confidence Rating:</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress-bar-container" style="width: 100px; height: 6px;">
+                                    <div class="progress-bar-fill" style="width: {{ rec_details.confidence_score }}%;"></div>
+                                </div>
+                                <strong>{{ rec_details.confidence_score }}%</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quality Comparison Chart Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="glass-card">
+                        <h4 class="mb-3"><i class="fas fa-chart-line text-primary me-2"></i>Quality Dimension Breakdown</h4>
+                        <div style="height: 250px;">
+                            <canvas id="qualityComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMPATIBILITY DETAILS SECTION (Merged from old recommendation.html) -->
+            <div id="compatibility-details" class="row g-4 mb-4">
+                <!-- Radar Chart -->
+                <div class="col-md-6">
+                    <div class="glass-card h-100">
+                        <h4 class="mb-3">Compatibility Breakdown Chart</h4>
+                        <div style="height: 300px;">
+                            <canvas id="compatibilityRadarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attributes breakdown list -->
+                <div class="col-md-6">
+                    <div class="glass-card h-100">
+                        <h4 class="mb-3">Structural Alignment Attributes</h4>
+                        <div class="table-responsive">
+                            <table class="table table-sm text-secondary small align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>Score</th>
+                                        <th>Explanation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Schema Similarity</strong></td>
+                                        <td><span class="badge bg-primary">{{ comp_details.schema_similarity }}%</span></td>
+                                        <td>Jaccard index of column sets</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Header Name Fuzzy Match</strong></td>
+                                        <td><span class="badge bg-primary">{{ comp_details.column_name_similarity }}%</span></td>
+                                        <td>Fuzzy matching ratios between columns</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>DType Match Ratio</strong></td>
+                                        <td><span class="badge bg-primary">{{ comp_details.dtype_compatibility }}%</span></td>
+                                        <td>Type compatibility of overlapping headers</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Common Columns Ratio</strong></td>
+                                        <td><span class="badge bg-primary">{{ comp_details.common_columns_ratio }}%</span></td>
+                                        <td>Overlaps relative to total features</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Row / Key Overlap</strong></td>
+                                        <td><span class="badge bg-primary">{{ comp_details.row_overlap }}%</span></td>
+                                        <td>Overlap on keys or distributions</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Correlation Similarity</strong></td>
+                                        <td><span class="badge bg-primary">{{ comp_details.correlation_similarity }}%</span></td>
+                                        <td>Statistical correlation alignments</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Missing Values Overlap</strong></td>
+                                        <td><span class="badge bg-primary">{{ comp_details.missing_value_overlap }}%</span></td>
+                                        <td>Jaccard similarity of null placements</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <!-- Venn diagram representation -->
+                <div class="col-md-4">
+                    <div class="glass-card text-center h-100">
+                        <h4 class="mb-3">Feature Overlap Venn</h4>
+                        <div class="venn-diagram-container">
+                            <div class="venn-circle a">
+                                <span class="text-white mt-5">A Only</span>
+                            </div>
+                            <div class="venn-circle b">
+                                <span class="text-white mt-5">B Only</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <span class="badge bg-primary px-3 py-2">Overlapping: {{ comp_details.common_columns_list | length }} features</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lists of columns -->
+                <div class="col-md-8">
+                    <div class="glass-card h-100">
+                        <h4 class="mb-3"><i class="fas fa-columns text-primary me-2"></i>Column Details</h4>
+                        
+                        <div class="mb-3">
+                            <strong>Overlapping Columns ({{ comp_details.common_columns_list | length }}):</strong>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                {% for col in comp_details.common_columns_list %}
+                                    <span class="badge bg-dark border border-secondary text-secondary font-monospace">{{ col }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>New Columns introduced by Dataset B ({{ comp_details.new_columns_list | length }}):</strong>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                {% for col in comp_details.new_columns_list %}
+                                    <span class="badge bg-success-subtle text-success font-monospace">{{ col }}</span>
+                                {% endfor %}
+                                {% if not comp_details.new_columns_list %}
+                                    <span class="text-muted small italic">None</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fusion Action Cockpit and Outputs Downloads -->
+            <div class="row g-4">
+                <div class="col-md-7">
+                    <div class="glass-card h-100">
+                        <h3 class="mb-4"><i class="fas fa-cogs text-primary me-2"></i>Fusion Control Panel</h3>
+                        
+                        <form action="/fuse" method="POST" id="fusionForm">
+                            <input type="hidden" name="file_a" value="{{ profile_a.filename }}">
+                            <input type="hidden" name="file_b" value="{{ profile_b.filename }}">
+                            
+                            <div class="mb-3">
+                                <label for="fusionStrategy" class="form-label font-weight-bold">Fusion Strategy</label>
+                                <select class="form-select bg-dark text-white border-secondary" id="fusionStrategy" name="strategy">
+                                    <option value="union" {% if rec_details.suggested_strategy == 'union' %}selected{% endif %}>Union (Row Concatenation)</option>
+                                    <option value="concat" {% if rec_details.suggested_strategy == 'concat' %}selected{% endif %}>Concatenation (Horizontal Side-by-Side)</option>
+                                    <option value="inner_join" {% if rec_details.suggested_strategy == 'inner_join' %}selected{% endif %}>Inner Join (Matching rows only)</option>
+                                    <option value="left_join" {% if rec_details.suggested_strategy == 'left_join' %}selected{% endif %}>Left Join (Preserve File A keys)</option>
+                                    <option value="right_join" {% if rec_details.suggested_strategy == 'right_join' %}selected{% endif %}>Right Join (Preserve File B keys)</option>
+                                    <option value="outer_join" {% if rec_details.suggested_strategy == 'outer_join' %}selected{% endif %}>Outer Join (All keys)</option>
+                                </select>
+                                <small class="text-muted mt-1 d-block">Recommended strategy based on heuristics: <strong>{{ rec_details.suggested_strategy.upper() }}</strong></small>
+                            </div>
+                            
+                            <div class="mb-3" id="keyColDiv" {% if rec_details.suggested_strategy not in ['inner_join', 'left_join', 'right_join', 'outer_join'] %}style="display:none;"{% endif %}>
+                                <label for="keyColumn" class="form-label">Join Key Column</label>
+                                <input type="text" class="form-control bg-dark text-white border-secondary" id="keyColumn" name="key_col" value="{{ comp_details.primary_key or '' }}" placeholder="e.g. id">
+                                <small class="text-muted mt-1 d-block">Column name to match rows on. Auto-detected: <code>{{ comp_details.primary_key or 'None' }}</code></small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-4">
+                                <input class="form-check-input" type="checkbox" role="switch" id="imputeVals" name="impute" value="true">
+                                <label class="form-check-label text-secondary" for="imputeVals">Impute missing cells during merge (Mean for numeric, Mode for text)</label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 py-2 pulse-btn">
+                                <i class="fas fa-play-circle me-2"></i>Execute Data Fusion
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="glass-card d-flex flex-column justify-content-between h-100">
+                        <div>
+                            <h4 class="mb-3"><i class="fas fa-file-download text-primary me-2"></i>Export Results</h4>
+                            
+                            {% if fusion_stats %}
+                            <!-- Download panel when fusion was executed -->
+                            <div class="alert alert-success border-0 small mb-4" style="background-color: rgba(22, 163, 74, 0.1); color: var(--status-success);">
+                                <i class="fas fa-circle-check me-2"></i>Fusion executed successfully! Resulting dataset contains <strong>{{ fusion_stats.rows_after }} rows</strong> and <strong>{{ fusion_stats.cols_after }} columns</strong>.
+                            </div>
+                            
+                            <div class="d-flex flex-column gap-2">
+                                <a href="/download/fused/{{ file_paths.csv_filename }}" class="btn btn-outline-secondary text-start d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-file-csv text-success me-2"></i>Download Fused CSV</span>
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                {% if file_paths.xlsx_filename %}
+                                <a href="/download/fused/{{ file_paths.xlsx_filename }}" class="btn btn-outline-secondary text-start d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-file-excel text-primary me-2"></i>Download Fused Excel (.xlsx)</span>
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                {% endif %}
+                                <a href="/download/fused/{{ file_paths.json_filename }}" class="btn btn-outline-secondary text-start d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-file-code text-warning me-2"></i>Download Fused JSON</span>
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                <a href="/download/reports/report_{{ profile_a.filename.split('.')[0] }}_{{ profile_b.filename.split('.')[0] }}.pdf" class="btn btn-outline-secondary text-start d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-file-pdf text-danger me-2"></i>Download PDF Analysis Report</span>
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                <a href="/report?file_a={{ profile_a.filename }}&file_b={{ profile_b.filename }}&strategy={{ fusion_stats.strategy }}&key={{ fusion_stats.primary_key or '' }}" target="_blank" class="btn btn-primary text-start d-flex justify-content-between align-items-center mt-2">
+                                    <span><i class="fas fa-print me-2"></i>View Printable Report</span>
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                            {% else %}
+                            <!-- Inform user to run fusion to unlock downloads -->
+                            <p class="text-muted small">Execute fusion or print the baseline report to activate all downloadable formats.</p>
+                            <div class="text-center py-4 border border-secondary rounded mb-3 bg-dark">
+                                <i class="fas fa-lock text-muted fa-lg"></i>
+                                <span class="d-block text-muted small mt-2">Outputs Locked</span>
+                            </div>
+                            <a href="/report?file_a={{ profile_a.filename }}&file_b={{ profile_b.filename }}" target="_blank" class="btn btn-outline-secondary w-100"><i class="fas fa-print me-2"></i>Print Baseline Report</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scripts to generate dashboard charts -->
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Strategy Change Event (show/hide key columns)
+                    const strategySelect = document.getElementById('fusionStrategy');
+                    const keyColDiv = document.getElementById('keyColDiv');
+                    if (strategySelect) {
+                        strategySelect.addEventListener('change', (e) => {
+                            const val = e.target.value;
+                            if (['inner_join', 'left_join', 'right_join', 'outer_join'].includes(val)) {
+                                keyColDiv.style.display = 'block';
+                            } else {
+                                keyColDiv.style.display = 'none';
+                            }
+                        });
+                    }
+
+                    // Quality scores breakdown charts
+                    const labels = [
+                        'Missing Values', 'Duplicates', 'Completeness', 
+                        'Diversity', 'Outliers', 'Consistency', 'Validity'
+                    ];
+                    
+                    const dataA = [
+                        {{ profile_a.quality_breakdown.missing_values }},
+                        {{ profile_a.quality_breakdown.duplicate_rows }},
+                        {{ profile_a.quality_breakdown.data_completeness }},
+                        {{ profile_a.quality_breakdown.feature_diversity }},
+                        {{ profile_a.quality_breakdown.outlier_ratio }},
+                        {{ profile_a.quality_breakdown.data_consistency }},
+                        {{ profile_a.quality_breakdown.data_type_validity }}
+                    ];
+                    
+                    const dataB = [
+                        {{ profile_b.quality_breakdown.missing_values }},
+                        {{ profile_b.quality_breakdown.duplicate_rows }},
+                        {{ profile_b.quality_breakdown.data_completeness }},
+                        {{ profile_b.quality_breakdown.feature_diversity }},
+                        {{ profile_b.quality_breakdown.outlier_ratio }},
+                        {{ profile_b.quality_breakdown.data_consistency }},
+                        {{ profile_b.quality_breakdown.data_type_validity }}
+                    ];
+
+                    renderQualityChart('qualityComparisonChart', dataA, dataB, labels);
+
+                    // Radar Chart
+                    const compLabels = [
+                        'Schema Similarity', 'Name Match', 'DType Match', 
+                        'Common Columns', 'Row Overlap', 'Correlation', 'Missing Overlap'
+                    ];
+                    
+                    const compScores = [
+                        {{ comp_details.schema_similarity }},
+                        {{ comp_details.column_name_similarity }},
+                        {{ comp_details.dtype_compatibility }},
+                        {{ comp_details.common_columns_ratio }},
+                        {{ comp_details.row_overlap }},
+                        {{ comp_details.correlation_similarity }},
+                        {{ comp_details.missing_value_overlap }}
+                    ];
+                    
+                    renderCompatibilityChart('compatibilityRadarChart', compScores, compLabels);
+                });
+            </script>
+
+            {% endif %}
+            {% endif %}
+        </main>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

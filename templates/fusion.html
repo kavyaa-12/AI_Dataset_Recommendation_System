@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fusion Results - Dataset Fusion AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo-container">
+                <i class="fas fa-network-wired logo-icon"></i>
+                <span class="logo-text">Dataset Fusion AI</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/"><i class="fas fa-home"></i>🏠 Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/upload-page"><i class="fas fa-cloud-upload-alt"></i>📂 Upload Datasets</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/profiles"><i class="fas fa-chart-bar"></i>📊 Dataset Profiles</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/dashboard"><i class="fas fa-robot"></i>🤖 AI Recommendation</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/reports"><i class="fas fa-file-invoice"></i>📄 Reports</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/history"><i class="fas fa-history"></i>🕘 History</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Content Area -->
+        <main class="main-content">
+            <div class="content-header">
+                <div>
+                    <a href="/dashboard" class="btn btn-sm btn-outline-secondary mb-3"><i class="fas fa-chevron-left me-2"></i>Back to Overview</a>
+                    <h1>Fusion Execution Results</h1>
+                    <p class="text-secondary mb-0">Result of joining <strong>{{ file_a }}</strong> and <strong>{{ file_b }}</strong></p>
+                </div>
+            </div>
+
+            {% if fusion_stats %}
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="glass-card">
+                        <div class="alert alert-success border-0 mb-4" style="background-color: rgba(22, 163, 74, 0.1); color: var(--status-success);">
+                            <i class="fas fa-circle-check me-2"></i>Fusion executed successfully using strategy: <strong>{{ suggested_strategy.upper() }}</strong>.
+                        </div>
+
+                        <h4 class="mb-3">Fusion Statistics</h4>
+                        <div class="row text-center g-3 mb-4">
+                            <div class="col-md-3">
+                                <div class="p-3 border border-secondary rounded">
+                                    <h3 class="mb-0 text-primary">{{ fusion_stats.rows_after }}</h3>
+                                    <small class="text-muted">Total Rows</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border border-secondary rounded">
+                                    <h3 class="mb-0 text-primary">{{ fusion_stats.cols_after }}</h3>
+                                    <small class="text-muted">Total Columns</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border border-secondary rounded">
+                                    <h3 class="mb-0 text-warning">{{ fusion_stats.duplicate_rows }}</h3>
+                                    <small class="text-muted">Duplicates Cleaned</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border border-secondary rounded">
+                                    <h3 class="mb-0 text-info">{{ fusion_stats.missing_cells }}</h3>
+                                    <small class="text-muted">Missing Cells ({{ fusion_stats.missing_ratio }}%)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="mb-3">Download Result</h4>
+                        <div class="d-flex flex-wrap gap-3">
+                            <a href="/download/fused/{{ file_paths.csv_filename }}" class="btn btn-outline-success">
+                                <i class="fas fa-file-csv me-2"></i>Download CSV
+                            </a>
+                            {% if file_paths.xlsx_filename %}
+                            <a href="/download/fused/{{ file_paths.xlsx_filename }}" class="btn btn-outline-primary">
+                                <i class="fas fa-file-excel me-2"></i>Download Excel
+                            </a>
+                            {% endif %}
+                            <a href="/download/fused/{{ file_paths.json_filename }}" class="btn btn-outline-warning">
+                                <i class="fas fa-file-code me-2"></i>Download JSON
+                            </a>
+                            <a href="/download/reports/report_{{ file_a.split('.')[0] }}_{{ file_b.split('.')[0] }}.pdf" class="btn btn-outline-danger">
+                                <i class="fas fa-file-pdf me-2"></i>Download PDF Report
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="glass-card text-center py-5">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <h3>No Fusion Results Found</h3>
+                <p class="text-secondary">Could not locate fusion data for this dataset pair and strategy.</p>
+                <a href="/" class="btn btn-primary mt-3">Start New Comparison</a>
+            </div>
+            {% endif %}
+
+        </main>
+    </div>
+</body>
+</html>

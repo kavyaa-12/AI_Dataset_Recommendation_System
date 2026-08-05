@@ -1,0 +1,1 @@
+["q_a", "q_b", "schema_similarity", "column_name_similarity", "dtype_compatibility", "common_columns_ratio", "unique_feature_gain", "row_overlap", "correlation_similarity", "has_primary_key", "comp_score", "missing_score_a", "missing_score_b", "dup_score_a", "dup_score_b", "completeness_a", "completeness_b", "num_rows_a", "num_rows_b", "num_cols_a", "num_cols_b"]

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>
+{% block title %}
+AI Dataset Fusion
+{% endblock %}
+</title>
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<link rel="stylesheet" href="/static/css/style.css">
+
+</head>
+
+
+<body>
+
+<div class="app-container">
+
+
+<nav class="sidebar">
+
+<div class="logo-container">
+
+<i class="fas fa-network-wired logo-icon"></i>
+
+<span class="logo-text">
+Dataset Fusion AI
+</span>
+
+</div>
+
+
+<ul class="nav-menu">
+
+<li class="nav-item">
+<a href="/">
+<i class="fas fa-home"></i>
+Home
+</a>
+</li>
+
+
+<li class="nav-item">
+<a href="/upload-page">
+<i class="fas fa-upload"></i>
+Upload Datasets
+</a>
+</li>
+
+
+<li class="nav-item">
+<a href="/profiles">
+<i class="fas fa-chart-column"></i>
+Profiles
+</a>
+</li>
+
+
+<li class="nav-item">
+<a href="/dashboard">
+<i class="fas fa-chart-line"></i>
+Dashboard
+</a>
+</li>
+
+
+<li class="nav-item">
+<a href="/reports">
+<i class="fas fa-file"></i>
+Reports
+</a>
+</li>
+
+
+<li class="nav-item">
+<a href="/history">
+<i class="fas fa-history"></i>
+History
+</a>
+</li>
+
+
+<li class="nav-item">
+<a href="#" id="themeToggle">
+<i class="fas fa-moon"></i>
+Theme
+</a>
+</li>
+
+
+</ul>
+
+</nav>
+
+
+<main class="main-content">
+
+
+{% block content %}
+
+{% endblock %}
+
+
+</main>
+
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="/static/js/main.js"></script>
+
+
+</body>
+
+</html>
